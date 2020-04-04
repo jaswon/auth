@@ -8,7 +8,7 @@ export class AuthStack extends cdk.Stack {
 
     const handler = new lambda.Function(this, "AuthHandler", {
       runtime: lambda.Runtime.GO_1_X,
-      code: lambda.Code.asset("function"),
+      code: lambda.Code.asset("function/bin"),
       handler: "main",
     })
 
