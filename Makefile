@@ -12,6 +12,7 @@ function/bin/main: function/main.go
 
 key:
 	ssh-keygen -t rsa -b 2048 -m PEM -N "" -f function/bin/sign.key
+	chmod 444 function/bin/sign.key
 	rm function/bin/sign.key.pub
 	openssl rsa -in function/bin/sign.key -pubout -outform PEM -out function/sign.key.pub
 
