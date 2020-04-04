@@ -13,3 +13,4 @@ cdk.out
 
 function/bin/
 *.key*
+secret
