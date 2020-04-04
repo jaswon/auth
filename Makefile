@@ -4,7 +4,7 @@ synth: lib/auth-stack.js function/bin/main
 deploy: lib/auth-stack.js function/bin/main
 	cdk deploy
 
-lib/auth-stack.js: lib/auth-stack.ts
+bin/auth.js: bin/auth.ts
 	npm run build
 
 function/bin/main: function/main.go
