@@ -12,3 +12,4 @@ cdk.out
 .build
 
 function/bin/
+*.key*
