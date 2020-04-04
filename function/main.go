@@ -2,12 +2,13 @@ package main
 
 import (
 	"crypto/rsa"
-	"fmt"
+	// "fmt"
 	"io/ioutil"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/dgrijalva/jwt-go"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var signKey *rsa.PrivateKey
@@ -30,13 +31,16 @@ func init() {
 }
 
 func HandleRequest(ev events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	if ev.Body != "" {
-
+	if bcrypt.CompareHashAndPassword(hashedSecret, []byte(ev.Body)) == nil {
+		return events.APIGatewayProxyResponse{
+			StatusCode: 200,
+			Body:       "auth success",
+		}, nil
 	}
 
 	return events.APIGatewayProxyResponse{
-		StatusCode: 200,
-		Body:       fmt.Sprintf("method=%s path=%s body=%s", ev.HTTPMethod, ev.Path, ev.Body),
+		StatusCode: 403,
+		Body:       "auth fail",
 	}, nil
 }
 
