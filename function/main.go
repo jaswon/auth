@@ -1,23 +1,16 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
-type Response struct {
-	Method   string
-	Resource string
-	Path     string
-	Body     string
-}
-
-func HandleRequest(ev events.APIGatewayProxyRequest) (Response, error) {
-	return Response{
-		ev.HTTPMethod,
-		ev.Resource,
-		ev.Path,
-		ev.Body,
+func HandleRequest(ev events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	return events.APIGatewayProxyResponse{
+		StatusCode: 200,
+		Body:       fmt.Sprintf("method=%s path=%s resource=%s body=%s", ev.HTTPMethod, ev.Path, ev.Resource, ev.Body),
 	}, nil
 }
 
