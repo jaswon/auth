@@ -18,5 +18,5 @@ func main() {
 	}
 	fmt.Println()
 	hashed, err := bcrypt.GenerateFromPassword(inp, bcrypt.DefaultCost)
-	ioutil.WriteFile("secret", hashed, 0444)
+	ioutil.WriteFile("bin/secret", hashed, 0444)
 }
