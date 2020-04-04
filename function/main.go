@@ -2,8 +2,8 @@ package main
 
 import (
 	"crypto/rsa"
-	// "fmt"
 	"io/ioutil"
+	"log"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -18,15 +18,15 @@ func init() {
 	var err error
 	hashedSecret, err = ioutil.ReadFile("./secret")
 	if err != nil {
-		panic("unable to read secret file")
+		log.Fatal("unable to read secret file", err)
 	}
 	pf, err := ioutil.ReadFile("./sign.key")
 	if err != nil {
-		panic("unable to read key file")
+		log.Fatal("unable to read key file", err)
 	}
 	signKey, err = jwt.ParseRSAPrivateKeyFromPEM(pf)
 	if err != nil {
-		panic("unable to parse key file")
+		log.Fatal("unable to parse key file", err)
 	}
 }
 
