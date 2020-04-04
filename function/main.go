@@ -16,11 +16,11 @@ var hashedSecret []byte
 
 func init() {
 	var err error
-	hashedSecret, err = ioutil.ReadFile("secret")
-	if err != nil || len(hashedSecret) == 0 {
+	hashedSecret, err = ioutil.ReadFile("./secret")
+	if err != nil {
 		panic("unable to read secret file")
 	}
-	pf, err := ioutil.ReadFile("sign.key")
+	pf, err := ioutil.ReadFile("./sign.key")
 	if err != nil {
 		panic("unable to read key file")
 	}
