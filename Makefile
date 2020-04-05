@@ -20,6 +20,7 @@ secret function/bin/secret: | function/bin
 
 key function/bin/signkey: | function/bin
 	openssl genrsa -out function/bin/signkey 4096
+	chmod 644 function/bin/signkey
 
 assets:
 	mkdir assets
