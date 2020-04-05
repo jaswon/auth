@@ -12,7 +12,7 @@ class AuthStack extends cdk.Stack {
 
     const handler = new lambda.Function(this, "AuthHandler", {
       runtime: lambda.Runtime.GO_1_X,
-      code: lambda.Code.asset("function/bin"),
+      code: lambda.Code.asset("assets/function.zip"),
       handler: "main",
     })
 
@@ -30,7 +30,7 @@ class AuthStack extends cdk.Stack {
     api.root.addResource("token").addMethod("POST", authLambdaIntegration)
 
     const pubkey = new assets.Asset(this, "pubkey", {
-      path: "function/sign.key.pub",
+      path: "assets/signkey.pub",
     })
 
     pubkey.grantRead(apiRole)

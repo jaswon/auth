@@ -1,20 +1,31 @@
-synth: lib/auth-stack.js function/bin/main
+ASSETS=$(addprefix assets/,signkey.pub function.zip)
+
+synth: bin/auth.js $(ASSETS)
 	cdk synth
 
-deploy: lib/auth-stack.js function/bin/main
+deploy: bin/auth.js $(ASSETS)
 	cdk deploy
 
 bin/auth.js: bin/auth.ts
 	npm run build
 
-function/bin/main: function/main.go
+function/bin:
+	mkdir function/bin
+
+function/bin/main: function/main.go | function/bin
 	cd function && GOOS=linux GOARCH=amd64 go build -o bin/main main.go
 
-key:
-	ssh-keygen -t rsa -b 2048 -m PEM -N "" -f function/bin/sign.key
-	chmod 644 function/bin/sign.key
-	rm function/bin/sign.key.pub
-	openssl rsa -in function/bin/sign.key -pubout -outform PEM -out function/sign.key.pub
-
-secret:
+secret function/bin/secret: | function/bin
 	cd function && go run gensecret/main.go
+
+key function/bin/signkey: | function/bin
+	openssl genrsa -out function/bin/signkey 4096
+
+assets:
+	mkdir assets
+
+assets/signkey.pub: function/bin/signkey | assets
+	openssl rsa -in function/bin/signkey -pubout -out assets/signkey.pub
+
+assets/function.zip: $(addprefix function/bin/,main signkey secret) | assets
+	zip -j assets/function function/bin/*

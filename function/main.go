@@ -20,7 +20,7 @@ func init() {
 	if err != nil {
 		log.Fatal("unable to read secret file", err)
 	}
-	pf, err := ioutil.ReadFile("./sign.key")
+	pf, err := ioutil.ReadFile("./signkey")
 	if err != nil {
 		log.Fatal("unable to read key file", err)
 	}
