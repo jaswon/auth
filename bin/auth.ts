@@ -5,6 +5,7 @@ import * as apigateway from "@aws-cdk/aws-apigateway";
 import * as lambda from "@aws-cdk/aws-lambda";
 import * as assets from "@aws-cdk/aws-s3-assets";
 import * as iam from "@aws-cdk/aws-iam";
+import * as certmanager from "@aws-cdk/aws-certificatemanager"
 
 export interface Config {
   certArn: string;
@@ -23,10 +24,19 @@ class AuthStack extends cdk.Stack {
       handler: "main",
     })
 
+    const cert = certmanager.Certificate.fromCertificateArn(this, "auth-api-cert", config.certArn)
+
+    const domain = new apigateway.DomainName(this, "auth-api-domain", {
+      domainName: config.domain,
+      certificate: cert,
+    })
+
     const api = new apigateway.RestApi(this, "auth-api", {
       restApiName: "Auth Service",
       description: "provides auth",
     })
+
+    domain.addBasePathMapping(api)
 
     const apiRole = new iam.Role(this, "auth-api-role", {
       assumedBy: new iam.ServicePrincipal("apigateway.amazonaws.com")
