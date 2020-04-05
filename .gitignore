@@ -10,5 +10,7 @@ cdk.out
 .cache
 .build
 
+# other
+bin/config.ts
 function/bin/
 assets

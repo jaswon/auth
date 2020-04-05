@@ -6,6 +6,13 @@ import * as lambda from "@aws-cdk/aws-lambda";
 import * as assets from "@aws-cdk/aws-s3-assets";
 import * as iam from "@aws-cdk/aws-iam";
 
+export interface Config {
+  certArn: string;
+  domain: string;
+}
+
+import { config } from "./config"
+
 class AuthStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
