@@ -1,10 +1,13 @@
-ASSETS=$(addprefix assets/,signkey.pub function.zip)
+ASSETS=$(addprefix function/bin/,main secret signkey verifykey)
 
 synth: bin/auth.js $(ASSETS)
 	cdk synth
 
 deploy: bin/auth.js $(ASSETS)
 	cdk deploy
+
+clean:
+	rm -r function/bin
 
 bin/auth.js: bin/auth.ts
 	npm run build
@@ -22,11 +25,6 @@ key function/bin/signkey: | function/bin
 	openssl genrsa -out function/bin/signkey 4096
 	chmod 644 function/bin/signkey
 
-assets:
-	mkdir assets
-
-assets/signkey.pub: function/bin/signkey | assets
-	openssl rsa -in function/bin/signkey -pubout -out assets/signkey.pub
-
-assets/function.zip: $(addprefix function/bin/,main signkey secret) | assets
-	zip -j assets/function function/bin/*
+function/bin/verifykey: function/bin/signkey
+	openssl rsa -in function/bin/signkey -pubout -out function/bin/verifykey
+	chmod 644 function/bin/verifykey
