@@ -4,6 +4,8 @@ import (
 	"crypto/rsa"
 	"io/ioutil"
 	"log"
+	"net/http"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -13,6 +15,12 @@ import (
 
 var signKey *rsa.PrivateKey
 var hashedSecret []byte
+
+// refresh tokens last for one week
+var refresh_ttl time.Duration = time.Hour * 24 * 7
+
+// access tokens last for 5 minutes
+var access_ttl time.Duration = time.Minute * 5
 
 func init() {
 	var err error
@@ -31,17 +39,54 @@ func init() {
 }
 
 func HandleRequest(ev events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	if bcrypt.CompareHashAndPassword(hashedSecret, []byte(ev.Body)) == nil {
+	if bcrypt.CompareHashAndPassword(hashedSecret, []byte(ev.Body)) != nil {
 		return events.APIGatewayProxyResponse{
-			StatusCode: 200,
-			Body:       "auth success",
+			StatusCode: 401,
+			Body:       "Unauthorized",
+		}, nil
+	}
+
+	refresh_token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.StandardClaims{
+		ExpiresAt: time.Now().Add(refresh_ttl).Unix(),
+	})
+
+	signed_refresh, err := refresh_token.SignedString(signKey)
+	if err != nil {
+		log.Println("unable to sign token", err)
+		return events.APIGatewayProxyResponse{
+			StatusCode: 500,
+			Body:       "unable to sign token",
+		}, nil
+	}
+
+	refresh_cookie := http.Cookie{
+		Name:     "jwon_refresh",
+		Value:    signed_refresh,
+		Secure:   true,
+		HttpOnly: true,
+	}
+
+	access_token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.StandardClaims{
+		ExpiresAt: time.Now().Add(refresh_ttl).Unix(),
+	})
+
+	signed_access, err := access_token.SignedString(signKey)
+	if err != nil {
+		log.Println("unable to sign token", err)
+		return events.APIGatewayProxyResponse{
+			StatusCode: 500,
+			Body:       "unable to sign token",
 		}, nil
 	}
 
 	return events.APIGatewayProxyResponse{
-		StatusCode: 403,
-		Body:       "auth fail",
+		StatusCode: 200,
+		Body:       signed_access,
+		Headers: map[string]string{
+			"Set-Cookie": refresh_cookie.String(),
+		},
 	}, nil
+
 }
 
 func main() {
