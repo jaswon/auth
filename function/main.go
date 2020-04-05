@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/rsa"
+	"errors"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -61,12 +62,17 @@ func authorize(ev events.APIGatewayProxyRequest) error {
 		}
 	}
 
-	refresh_token, err := (&http.Request{Header: http.Header(ev.MultiValueHeaders)}).Cookie(cookie_name)
+	cookies, ok := ev.MultiValueHeaders["cookie"]
+	if !ok {
+		return errors.New("no auth provided")
+	}
+
+	refresh_token, err := (&http.Request{Header: http.Header{"Cookie": cookies}}).Cookie(cookie_name)
 	if err != nil {
 		return err
 	}
 
-	token, err := jwt.Parse(refresh_token.String(), func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.Parse(refresh_token.Value, func(token *jwt.Token) (interface{}, error) {
 		return verifyKey, nil
 	})
 
