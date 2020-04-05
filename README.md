@@ -9,6 +9,12 @@ The deployed service has two endpoints:
 
 ## setup
 
+### prerequisites
+- have a domain
+- create a certificate for this domain using aws certificate-manager
+
+### steps
+
 1. clone this repo
 2. `cd auth`
 3. `npm install`
