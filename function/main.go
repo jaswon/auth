@@ -46,8 +46,12 @@ func HandleRequest(ev events.APIGatewayProxyRequest) (events.APIGatewayProxyResp
 		}, nil
 	}
 
+	now := time.Now()
+	refresh_expire := now.Add(refresh_ttl)
+	access_expire := now.Add(access_ttl)
+
 	refresh_token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.StandardClaims{
-		ExpiresAt: time.Now().Add(refresh_ttl).Unix(),
+		ExpiresAt: refresh_expire.Unix(),
 	})
 
 	signed_refresh, err := refresh_token.SignedString(signKey)
@@ -64,10 +68,12 @@ func HandleRequest(ev events.APIGatewayProxyRequest) (events.APIGatewayProxyResp
 		Value:    signed_refresh,
 		Secure:   true,
 		HttpOnly: true,
+		Expires:  refresh_expire,
+		Path:     "/",
 	}
 
 	access_token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.StandardClaims{
-		ExpiresAt: time.Now().Add(access_ttl).Unix(),
+		ExpiresAt: access_expire.Unix(),
 	})
 
 	signed_access, err := access_token.SignedString(signKey)
