@@ -67,7 +67,7 @@ func HandleRequest(ev events.APIGatewayProxyRequest) (events.APIGatewayProxyResp
 	}
 
 	access_token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.StandardClaims{
-		ExpiresAt: time.Now().Add(refresh_ttl).Unix(),
+		ExpiresAt: time.Now().Add(access_ttl).Unix(),
 	})
 
 	signed_access, err := access_token.SignedString(signKey)
