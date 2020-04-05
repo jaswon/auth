@@ -14,7 +14,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-const cookie_name = "jwon_refresh"
+var CookieName string
 
 var signKey *rsa.PrivateKey
 var verifyKey *rsa.PublicKey
@@ -67,7 +67,7 @@ func authorize(ev events.APIGatewayProxyRequest) error {
 		return errors.New("no auth provided")
 	}
 
-	refresh_token, err := (&http.Request{Header: http.Header{"Cookie": cookies}}).Cookie(cookie_name)
+	refresh_token, err := (&http.Request{Header: http.Header{"Cookie": cookies}}).Cookie(CookieName)
 	if err != nil {
 		return err
 	}
@@ -113,7 +113,7 @@ func HandleRequest(ev events.APIGatewayProxyRequest) (events.APIGatewayProxyResp
 	}
 
 	refresh_cookie := http.Cookie{
-		Name:     cookie_name,
+		Name:     CookieName,
 		Value:    signed_refresh,
 		Secure:   true,
 		HttpOnly: true,

@@ -1,4 +1,6 @@
-ASSETS=$(addprefix function/bin/,main secret signkey verifykey)
+include config.mk
+
+ASSETS = $(addprefix function/bin/,main secret signkey verifykey)
 
 synth: bin/auth.js $(ASSETS)
 	cdk synth
@@ -16,7 +18,7 @@ function/bin:
 	mkdir function/bin
 
 function/bin/main: function/main.go | function/bin
-	cd function && GOOS=linux GOARCH=amd64 go build -o bin/main main.go
+	cd function && GOOS=linux GOARCH=amd64 go build -o bin/main -ldflags="-X 'main.CookieName=$(COOKIE_NAME)'" main.go
 
 secret function/bin/secret: | function/bin
 	cd function && go run gensecret/main.go
