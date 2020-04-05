@@ -1,12 +1,13 @@
 include config.mk
 
 ASSETS = $(addprefix function/bin/,main secret signkey verifykey)
+CDK_ENV = CERT_ARN=$(CERT_ARN) DOMAIN=$(DOMAIN)
 
 synth: bin/auth.js $(ASSETS)
-	cdk synth
+	$(CDK_ENV) cdk synth
 
 deploy: bin/auth.js $(ASSETS)
-	cdk deploy
+	$(CDK_ENV) cdk deploy
 
 clean:
 	rm -r function/bin

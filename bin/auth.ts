@@ -7,13 +7,6 @@ import * as assets from "@aws-cdk/aws-s3-assets";
 import * as iam from "@aws-cdk/aws-iam";
 import * as certmanager from "@aws-cdk/aws-certificatemanager"
 
-export interface Config {
-  certArn: string;
-  domain: string;
-}
-
-import { config } from "./config"
-
 class AuthStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -24,11 +17,15 @@ class AuthStack extends cdk.Stack {
       handler: "main",
     })
 
-    const cert = certmanager.Certificate.fromCertificateArn(this, "auth-api-cert", config.certArn)
+    const certArn: string = process.env.CERT_ARN || ""
+
+    const cert = certmanager.Certificate.fromCertificateArn(this, "auth-api-cert", certArn)
+
+    const domainName = process.env.DOMAIN || ""
 
     const domain = new apigateway.DomainName(this, "auth-api-domain", {
-      domainName: config.domain,
       certificate: cert,
+      domainName,
     })
 
     const api = new apigateway.RestApi(this, "auth-api", {
