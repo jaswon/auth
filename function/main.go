@@ -54,12 +54,7 @@ func init() {
 
 func authorize(ev events.APIGatewayProxyRequest) error {
 	if ev.Body != "" {
-		err := bcrypt.CompareHashAndPassword(hashedSecret, []byte(ev.Body))
-		if err == nil {
-			return nil
-		} else {
-			log.Println(err)
-		}
+		return bcrypt.CompareHashAndPassword(hashedSecret, []byte(ev.Body))
 	}
 
 	cookies, ok := ev.MultiValueHeaders["cookie"]
