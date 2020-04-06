@@ -30,3 +30,9 @@ make secret
 ```
 make key
 ```
+
+## files
+
+- `bin/auth.ts` - AWS Cloudformation stack defined with AWS CDK
+- `function/main.go` - AWS Lambda function definition (deployed to `/token` endpoint)
+- `function/gensecret/main.go` - utility for hashing the master password
