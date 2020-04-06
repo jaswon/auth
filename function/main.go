@@ -100,6 +100,7 @@ func HandleRequest(ev events.APIGatewayProxyRequest) (events.APIGatewayProxyResp
 	access_expire := now.Add(access_ttl)
 
 	refresh_token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.StandardClaims{
+		NotBefore: now.Unix(),
 		ExpiresAt: refresh_expire.Unix(),
 	})
 
@@ -122,6 +123,7 @@ func HandleRequest(ev events.APIGatewayProxyRequest) (events.APIGatewayProxyResp
 	}
 
 	access_token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.StandardClaims{
+		NotBefore: now.Unix(),
 		ExpiresAt: access_expire.Unix(),
 	})
 
