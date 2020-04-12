@@ -1,33 +1,36 @@
 include config.mk
 
-ASSETS = $(addprefix function/bin/,main secret signkey verifykey)
+HANDLER_ASSETS = main secret verifykey signkey
 CDK_ENV = CERT_ARN=$(CERT_ARN) DOMAIN=$(DOMAIN)
 
-synth: bin/auth.js $(ASSETS)
+synth: auth.js bin/handler.zip
 	$(CDK_ENV) cdk synth
 
-deploy: bin/auth.js $(ASSETS)
+deploy: auth.js bin/handler
 	$(CDK_ENV) cdk deploy
 
 clean:
-	rm -r function/bin
+	rm -r bin/
 
-bin/auth.js: bin/auth.ts
+auth.js: auth.ts
 	npm run build
 
-function/bin:
-	mkdir function/bin
+bin/handler.zip: $(addprefix bin/handler/,$(HANDLER_ASSETS))
+	zip -j bin/handler bin/handler/*
 
-function/bin/main: function/main.go | function/bin
-	cd function && GOOS=linux GOARCH=amd64 go build -o bin/main -ldflags="-X 'main.CookieName=$(COOKIE_NAME)'" main.go
+bin/handler:
+	mkdir -p bin/handler
 
-secret function/bin/secret: | function/bin
-	cd function && go run gensecret/main.go
+bin/handler/main: handler/main.go | bin/handler
+	GOOS=linux GOARCH=amd64 go build -o bin/handler/main -ldflags="-X 'main.CookieName=$(COOKIE_NAME)'" handler/main.go
 
-key function/bin/signkey: | function/bin
-	openssl genrsa -out function/bin/signkey 4096
-	chmod 644 function/bin/signkey
+secret bin/handler/secret: | bin/handler
+	go run gensecret/main.go
 
-function/bin/verifykey: function/bin/signkey
-	openssl rsa -in function/bin/signkey -pubout -out function/bin/verifykey
-	chmod 644 function/bin/verifykey
+key bin/handler/signkey: | bin/handler
+	openssl genrsa -out bin/handler/signkey 4096
+	chmod 644 bin/handler/signkey
+
+bin/handler/verifykey: bin/handler/signkey
+	openssl rsa -in bin/handler/signkey -pubout -out bin/handler/verifykey
+	chmod 644 bin/handler/verifykey
