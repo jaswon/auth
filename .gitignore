@@ -11,5 +11,4 @@ cdk.out
 .build
 
 # other
-bin/config.ts
-function/bin/
+bin/*
