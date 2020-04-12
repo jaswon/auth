@@ -25,7 +25,7 @@ bin/handler/main: handler/main.go | bin/handler
 	GOOS=linux GOARCH=amd64 go build -o bin/handler/main -ldflags="-X 'main.CookieName=$(COOKIE_NAME)'" handler/main.go
 
 secret bin/handler/secret: | bin/handler
-	go run gensecret/main.go
+	read -sp 'enter new secret: ' && echo $$REPLY | go run gensecret/main.go > bin/handler/secret
 
 key bin/handler/signkey: | bin/handler
 	openssl genrsa -out bin/handler/signkey 4096
