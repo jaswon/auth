@@ -1,12 +1,13 @@
 include config.mk
 
 HANDLER_ASSETS = main secret verifykey signkey
+AUTHORIZER_ASSETS = main verifykey
 CDK_ENV = CERT_ARN=$(CERT_ARN) DOMAIN=$(DOMAIN)
 
-synth: auth.js bin/handler.zip
+synth: auth.js bin/handler.zip bin/authorizer.zip
 	$(CDK_ENV) cdk synth
 
-deploy: auth.js bin/handler
+deploy: auth.js bin/handler.zip bin/authorizer.zip
 	$(CDK_ENV) cdk deploy
 
 clean:
@@ -14,6 +15,18 @@ clean:
 
 auth.js: auth.ts
 	npm run build
+
+bin/authorizer.zip: $(addprefix bin/authorizer/,$(AUTHORIZER_ASSETS))
+	zip -j bin/authorizer bin/authorizer/*
+
+bin/authorizer:
+	mkdir -p bin/authorizer
+
+bin/authorizer/main: authorizer/main.go | bin/authorizer
+	GOOS=linux GOARCH=amd64 go build -o bin/authorizer/main authorizer/main.go
+
+bin/authorizer/verifykey: bin/handler/verifykey
+	cp bin/handler/verifykey bin/authorizer/verifykey
 
 bin/handler.zip: $(addprefix bin/handler/,$(HANDLER_ASSETS))
 	zip -j bin/handler bin/handler/*

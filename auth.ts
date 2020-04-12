@@ -11,15 +11,15 @@ class AuthStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // const authorizer = new lambda.Function(this, "Authorizer", {
-    //   runtime: lambda.Runtime.GO_1_X,
-    //   code: lambda.Code.asset("bin/authorizer"),
-    //   handler: "main",
-    // })
+    const authorizer = new lambda.Function(this, "Authorizer", {
+      runtime: lambda.Runtime.GO_1_X,
+      code: lambda.Code.asset("bin/authorizer.zip"),
+      handler: "main",
+    })
 
     const handler = new lambda.Function(this, "AuthHandler", {
       runtime: lambda.Runtime.GO_1_X,
-      code: lambda.Code.asset("bin/handler"),
+      code: lambda.Code.asset("bin/handler.zip"),
       handler: "main",
     })
 
