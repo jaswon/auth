@@ -10,8 +10,8 @@ The deployed service has two endpoints:
 ## setup
 
 ### prerequisites
-- have a domain
-- create a certificate for this domain using aws certificate-manager
+- register a domain
+- create a certificate for this domain using AWS Certificate Manager
 
 ### steps
 
@@ -33,6 +33,7 @@ make key
 
 ## files
 
-- `bin/auth.ts` - AWS Cloudformation stack defined with AWS CDK
-- `function/main.go` - AWS Lambda function definition (deployed to `/token` endpoint)
-- `function/gensecret/main.go` - utility for hashing the master password
+- `auth.ts` - AWS Cloudformation stack defined with AWS CDK
+- `handler/main.go` - AWS Lambda for auth service (deployed to `/token` endpoint)
+- `gensecret/main.go` - utility for hashing the master password
+- `authorizer/main.go` - AWS Lambda for AWS API Gateway custom authorizer
