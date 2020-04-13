@@ -11,27 +11,27 @@ class AuthStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const authorizer = new lambda.Function(this, "Authorizer", {
+    const authorizerLambda = new lambda.Function(this, "AuthorizerLambda", {
       runtime: lambda.Runtime.GO_1_X,
       code: lambda.Code.asset("bin/authorizer.zip"),
       handler: "main",
     })
 
-    const handler = new lambda.Function(this, "AuthHandler", {
+    const authorizer = new apigateway.TokenAuthorizer(this, "Authorizer", {
+        handler: authorizerLambda,
+    })
+
+    const serviceLambda = new lambda.Function(this, "AuthServiceLambda", {
       runtime: lambda.Runtime.GO_1_X,
       code: lambda.Code.asset("bin/handler.zip"),
       handler: "main",
     })
 
-    const certArn: string = process.env.CERT_ARN || ""
-
-    const cert = certmanager.Certificate.fromCertificateArn(this, "auth-api-cert", certArn)
-
-    const domainName = process.env.DOMAIN || ""
+    const cert = certmanager.Certificate.fromCertificateArn(this, "auth-api-cert", process.env.CERT_ARN || "")
 
     const domain = new apigateway.DomainName(this, "auth-api-domain", {
       certificate: cert,
-      domainName,
+      domainName: process.env.DOMAIN || "",
     })
 
     const api = new apigateway.RestApi(this, "auth-api", {
@@ -45,7 +45,7 @@ class AuthStack extends cdk.Stack {
       assumedBy: new iam.ServicePrincipal("apigateway.amazonaws.com")
     })
 
-    const authLambdaIntegration = new apigateway.LambdaIntegration(handler)
+    const authLambdaIntegration = new apigateway.LambdaIntegration(serviceLambda)
 
     api.root.addResource("token").addMethod("POST", authLambdaIntegration)
 
@@ -71,6 +71,10 @@ class AuthStack extends cdk.Stack {
       methodResponses: [
         { statusCode: "200" },
       ],
+    })
+
+    api.root.addResource("test").addMethod("GET", new apigateway.HttpIntegration("http://httpbin.org/get"), {
+      authorizer: authorizer,
     })
   }
 }

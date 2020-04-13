@@ -25,31 +25,34 @@ func init() {
 }
 
 func HandleRequest(ev events.APIGatewayCustomAuthorizerRequest) (events.APIGatewayCustomAuthorizerResponse, error) {
-	token, err := jwt.Parse(ev.AuthorizationToken, func(token *jwt.Token) (interface{}, error) {
-		return verifyKey, nil
-	})
-
-	if !token.Valid {
-		return events.APIGatewayCustomAuthorizerResponse{}, err
-	}
-
-	awsAccountID := strings.Split(ev.MethodArn, ":")[4]
-
-	resource := "arn:aws:execute-api:" + awsAccountID + ":*/*/*"
-
-	return events.APIGatewayCustomAuthorizerResponse{
+	policy := events.APIGatewayCustomAuthorizerResponse{
 		PrincipalID: "user",
 		PolicyDocument: events.APIGatewayCustomAuthorizerPolicy{
 			Version: "2012-10-17",
 			Statement: []events.IAMPolicyStatement{
 				events.IAMPolicyStatement{
 					Action:   []string{"execute-api:Invoke"},
-					Effect:   "Allow",
-					Resource: []string{resource},
+					Resource: []string{strings.Split(ev.MethodArn, "/")[0] + "/*/*/*"},
 				},
 			},
 		},
-	}, nil
+		Context: map[string]interface{}{},
+	}
+
+	token, err := jwt.Parse(ev.AuthorizationToken, func(token *jwt.Token) (interface{}, error) {
+		return verifyKey, nil
+	})
+
+	if token.Valid {
+		policy.PolicyDocument.Statement[0].Effect = "ALLOW"
+		return policy, nil
+	} else if ve, ok := err.(*jwt.ValidationError); ok {
+		policy.PolicyDocument.Statement[0].Effect = "DENY"
+		policy.Context["error"] = ve.Error()
+		return policy, nil
+	} else {
+		return events.APIGatewayCustomAuthorizerResponse{}, err
+	}
 }
 
 func main() {
